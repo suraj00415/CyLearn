@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-gnome-pod
+  labels:
+    app: ubuntu-gnome
+spec:
+  containers:
+    - name: ubuntu-gnome
+      image: surajshah/ubuntu-vm:v1
+      securityContext:
+        privileged: true
+      ports:
+        - containerPort: 3389
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-ubuntu-gnome
+  labels:
+    app: ubuntu-gnome
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3389    # Service port within the cluster
+      targetPort: 3389  # Maps to the container port
+      protocol: TCP
+  selector:
+    app: ubuntu-gnome
