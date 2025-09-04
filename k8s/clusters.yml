@@ -5,29 +5,17 @@ nodes:
   extraPortMappings:
   - containerPort: 30007
     hostPort: 30007
-  - containerPort: 8080
+  - containerPort: 30010
     hostPort: 8083
-  - containerPort: 4001
-    hostPort: 3999
-  - containerPort: 5000
-    hostPort: 5000
 
 - role: worker
   extraPortMappings:
   - containerPort: 30007
     hostPort: 30008
-  - containerPort: 8080
+  - containerPort: 30010
     hostPort: 8081
-  - containerPort: 4001
-    hostPort: 4002
-  - containerPort: 5000
-    hostPort: 5001
 
 - role: worker
   extraPortMappings:
-  - containerPort: 8080
+  - containerPort: 30010
     hostPort: 8082
-  - containerPort: 4001
-    hostPort: 4003
-  - containerPort: 5000
-    hostPort: 5002

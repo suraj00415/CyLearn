@@ -1,19 +1,19 @@
-export function getUbuntuPodManifest(userId) {
+export function getUbuntuPodManifest(userId, name, image) {
     // Create a unique label for the pod using the userId
-    const podLabel = `ubuntu-gnome-${userId}`;
+    const podLabel = `${name}-${userId}`;
     return {
         apiVersion: "v1",
         kind: "Pod",
         metadata: {
             generateName: `${podLabel}-`,
-            labels: { app: "ubuntu-gnome", podLabel },
+            labels: { app: name, podLabel },
             namespace: "default",
         },
         spec: {
             containers: [
                 {
-                    name: "ubuntu-gnome",
-                    image: "surajshah/ubuntu-vm:v1",
+                    name,
+                    image,
                     securityContext: { privileged: true },
                     ports: [{ containerPort: 3389 }],
                 },
@@ -22,13 +22,13 @@ export function getUbuntuPodManifest(userId) {
     };
 }
 
-export function getKaliServiceManifest(podName,podLabel) {
+export function getKaliServiceManifest(podName, podLabel, name) {
     return {
         apiVersion: "v1",
         kind: "Service",
         metadata: {
             name: `service-${podName}`,
-            labels: { app: "ubuntu-gnome", podLabel },
+            labels: { app: name, podLabel },
         },
         spec: {
             type: "ClusterIP",
@@ -40,7 +40,7 @@ export function getKaliServiceManifest(podName,podLabel) {
                 },
             ],
             // The selector now matches the custom label we set on the pod
-            selector: { app: "ubuntu-gnome", podLabel },
+            selector: { app: name, podLabel },
         },
     };
 }

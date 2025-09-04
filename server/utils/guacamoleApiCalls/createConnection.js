@@ -1,7 +1,13 @@
 import axios from "axios";
 import { baseUrl } from "../consts.js";
 
-export async function createRDPConnection(token, hostname, podname) {
+export async function createRDPConnection(
+    token,
+    hostname,
+    podname,
+    username = "testuser",
+    password = "toor"
+) {
     try {
         const url = `${baseUrl}/api/session/data/mysql/connections?token=${token}`;
         console.log("Create RDP Connection URL:", url);
@@ -12,8 +18,8 @@ export async function createRDPConnection(token, hostname, podname) {
             parameters: {
                 hostname,
                 port: "3389",
-                username: "testuser",
-                password: "toor",
+                username,
+                password,
                 security: "rdp",
             },
             attributes: {},

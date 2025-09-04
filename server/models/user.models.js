@@ -1,0 +1,100 @@
+import mongoose, { Schema } from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
+const userSchema = new Schema(
+    {
+        name: {
+            type: String,
+            required: [true, "Name is Required"],
+            trim: true,
+        },
+        email: {
+            type: String,
+            required: [true, "Email is Required"],
+        },
+        username: {
+            type: String,
+            required: [true, "Username is Required"],
+            lowercase: true,
+            trim: true,
+            unique: [true, "Username Already Exists"],
+            index: true,
+        },
+        password: {
+            type: String,
+            required: [true, "Password is Required"],
+        },
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
+        refreshToken: {
+            type: String,
+            default: null,
+        },
+        stakeHolderType: {
+            type: String,
+            required: [true, "StakeHolder Type is Required"],
+            enum: ["student", "educator", "company", "group"],
+        },
+    },
+    { timestamps: true }
+);
+
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+userSchema.methods.generateRefreshToken = async function () {
+    const token = await jwt.sign(
+        {
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+        }
+    );
+    return token;
+};
+
+userSchema.methods.generateAccessToken = async function () {
+    const token = await jwt.sign(
+        {
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+        }
+    );
+    return token;
+};
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+    const isCorrect = await bcrypt.compare(password, this.password);
+    return isCorrect;
+};
+
+userSchema.methods.generateVerifyEmailToken = function () {
+    const unHashedToken = crypto.randomBytes(30).toString("hex");
+
+    const hashedToken = crypto
+        .createHash("sha256")
+        .update(unHashedToken)
+        .digest("hex");
+
+    const tokenExpiry =
+        Number(Date.now()) + Number(process.env.VERIFY_EMAIL_TOKEN_EXPIRY);
+    return { unHashedToken, hashedToken, tokenExpiry };
+};
+
+export const User = mongoose.model("User", userSchema);

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-server-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-server
+  template:
+    metadata:
+      labels:
+        app: backend-server
+    spec:
+      serviceAccountName: backend-sa  # 🔹 Assign the Service Account
+      containers:
+        - name: backend-server
+          image: surajshah/backend_server:v2.4
+          ports:
+            - containerPort: 5010
+          env:
+            - name: GUACAMOLE_WEBURL
+              value: "http://guacamole:8082/guacamole"
+            - name: GUACAMOLE_WEBURL_FRONTEND
+              value: "http://localhost:30007/guacamole"
+            - name: LLM_SERVER
+              value: "http://llm-server:7002"
+            # - name: WEB_SERVER
+            #   value: "http://vite-frontend-cluster-service:80"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: backend-server-secrets
+                  key: MONGODB_URI
+            - name: ACCESS_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-server-secrets
+                  key: ACCESS_TOKEN_SECRET
+            - name: REFRESH_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-server-secrets
+                  key: REFRESH_TOKEN_SECRET
+            - name: ACCESS_TOKEN_EXPIRY
+              value: "2d"
+            - name: REFRESH_TOKEN_EXPIRY
+              value: "10d"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-server-service
+spec:
+  selector:
+    app: backend-server
+  ports:
+    - protocol: TCP
+      port: 5010  # Port exposed by the service
+      targetPort: 5010  # Port on the container

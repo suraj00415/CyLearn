@@ -1,69 +1,47 @@
-import axios from "axios";
-import { useRef, useState } from "react";
-import { baseURL } from "./utils/consts";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient } from "@tanstack/react-query";
+import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Blog from "./pages/Blog";
+import Careers from "./pages/Careers";
+import Contact from "./pages/Contact";
+import Dashboard from "./pages/Dashboard";
+import Index from "./pages/Index";
+import Labs from "./pages/Labs";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
+import Register from "./pages/Register";
+import SecurityAnalyzer from "./pages/SecurityAnalyzer";
+import StartLab from "./pages/StartLab";
 
-function App() {
-  const [connection, setConnection] = useState(null);
-  const [loading, setLoading] = useState(false);
+const queryClient = new QueryClient();
 
-  const handleCreateInstance = async () => {
-    setLoading(true);
-    try {
-      const url = baseURL + "vm/create-instance";
-      const response = await axios.post(url);
-      setConnection(response.data);
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to create instance");
-    }
-    setLoading(false);
-  };
-  const iframeRef = useRef(null);
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6">Ubuntu in Browser</h1>
-      {!connection && connection === null && <button
-        onClick={handleCreateInstance}
-        disabled={loading || connection !== null}
-        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-300 ease-in-out shadow-lg"
-      >
-        {loading ? (
-          <span className="flex items-center">
-            <svg className="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full" viewBox="0 0 24 24"></svg>
-            Launching...
-          </span>
-        ) : (
-          "Start Ubuntu"
-        )}
-      </button>
-      }
+const App = () => (
+  <TooltipProvider>
+    <Toaster />
+    <Sonner />
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/labs" element={<Labs />} />
+      <Route path="/labs/:labId" element={<Labs />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/careers" element={<Careers />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/security-analyzer" element={<SecurityAnalyzer />} />
 
-      {connection && (
-        <div className=" w-full max-w-4xl" onClick={() => { iframeRef?.current.focus() }}>
-          <h2 className="text-xl font-semibold mb-4 text-center" >
-            Guacamole Remote Desktop
-          </h2>
-          <div className="border border-gray-700 rounded-lg overflow-hidden shadow-lg ">
-            <iframe
-              title="Ubuntu-GNOME Session"
-              src={connection?.guacUrl + "?embed=true&enable-keyboard=true"}
-              className="w-full h-[500px] border-none"
-              tabIndex={0} // Added this attribute
-              onLoad={(e) => e.target?.contentWindow?.focus()}
-              ref={iframeRef}
-            />
-          </div>
-          <button
-            onClick={() => iframeRef.current.requestFullscreen()}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded mt-4 justify-center items-center"
-          >
-            Full Screen
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/start-lab/:labId" element={<StartLab />} />
+        <Route path="/dashboard/:stakeholderType" element={<Dashboard />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </TooltipProvider>
+);
 
 export default App;
